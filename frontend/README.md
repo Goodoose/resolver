@@ -18,11 +18,17 @@ npm install
 ## Launch (development)
 
 ```bash
-npm run dev
+npm start
 ```
 
-Opens on **http://localhost:5173** with hot module replacement — saving a file
-updates the browser without a reload.
+Serves on **http://localhost:3000** and opens your default browser automatically.
+Hot module replacement is on — saving a file updates the page without a reload.
+
+The port is pinned in [`vite.config.ts`](vite.config.ts) with `strictPort: true`,
+so if something else already holds 3000 the dev server fails loudly instead of
+silently moving to another port (which would break the backend's CORS allowlist).
+To use a different port, change `server.port` there and update `CORS_ORIGINS` in
+[`../backend/.env`](../backend/.env.example) to match.
 
 The backend must be running separately on port 8000 for API calls to work.
 See [`../backend/README.md`](../backend/README.md).
@@ -31,7 +37,7 @@ See [`../backend/README.md`](../backend/README.md).
 
 | Command           | What it does                                                        |
 | ----------------- | ------------------------------------------------------------------- |
-| `npm run dev`     | Dev server on :5173 with HMR                                         |
+| `npm start`       | Dev server on :3000 with HMR, opens the browser                      |
 | `npm run build`   | Type-checks (`tsc -b`) and builds the production bundle into `dist/` |
 | `npm run preview` | Serves the built `dist/` locally to verify a production build        |
 | `npm run lint`    | Lints with [oxlint](https://oxc.rs)                                  |

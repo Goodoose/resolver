@@ -12,7 +12,7 @@ Monorepo with two apps:
 ```bash
 cd frontend
 npm install
-npm run dev      # http://localhost:5173
+npm start        # http://localhost:3000 (opens the browser automatically)
 npm run build
 ```
 

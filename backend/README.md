@@ -63,7 +63,7 @@ cp .env.example .env
 | Variable       | Default                       | Purpose                                      |
 | -------------- | ----------------------------- | -------------------------------------------- |
 | `APP_NAME`     | `resolver-api`                | Title shown in the OpenAPI docs               |
-| `CORS_ORIGINS` | `["http://localhost:5173"]`   | Origins allowed to call the API (JSON list)   |
+| `CORS_ORIGINS` | `["http://localhost:3000"]`   | Origins allowed to call the API (JSON list)   |
 
 `.env` is gitignored; `.env.example` is committed as the template.
 
