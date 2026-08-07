@@ -1,9 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api import router
 from app.config import settings
 
-app = FastAPI(title=settings.app_name)
+app = FastAPI(
+    title=settings.app_name,
+    description=(
+        "Forensic project teardown — prototype. Read-only: analyses one "
+        "completed project's exported records and writes nothing back."
+    ),
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,7 +20,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/api/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+app.include_router(router)
