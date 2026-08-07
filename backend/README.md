@@ -37,18 +37,51 @@ Or without activating the venv:
 
 Once running:
 
-| URL                                 | What it is                          |
-| ----------------------------------- | ----------------------------------- |
-| http://localhost:8000/api/health     | Health check → `{"status": "ok"}`   |
-| http://localhost:8000/docs           | Swagger UI — try endpoints in-browser |
-| http://localhost:8000/redoc          | ReDoc API reference                  |
-| http://localhost:8000/openapi.json   | OpenAPI schema                       |
+| URL                                | What it is                            |
+| ---------------------------------- | ------------------------------------- |
+| http://localhost:8000/docs         | Swagger UI — try endpoints in-browser |
+| http://localhost:8000/redoc        | ReDoc API reference                   |
+| http://localhost:8000/openapi.json | OpenAPI schema                        |
 
 Quick check:
 
 ```bash
 curl http://localhost:8000/api/health
 ```
+
+## Endpoints
+
+| Method | Path                   | Returns                                            |
+| ------ | ---------------------- | -------------------------------------------------- |
+| GET    | `/api/health`          | `{"status": "ok"}`                                  |
+| GET    | `/api/project`         | Project metadata (name, record counts)              |
+| GET    | `/api/sources`         | The full record set — what every claim traces to    |
+| GET    | `/api/teardown`        | The complete teardown, all at once                  |
+| GET    | `/api/teardown/stream` | SSE: dig steps one at a time, then the result       |
+| POST   | `/api/interrogate`     | `{question}` → a sourced answer, or an honest decline |
+| GET    | `/api/benchmark`       | The naive-baseline transcript for the head-to-head  |
+
+Every route is read-only. There is no write path in the service, which is what
+makes the read-only promise to the buyer structural rather than procedural.
+
+`/api/teardown/stream` exists separately from `/api/teardown` so the UI *cannot*
+render the verdict early — it does not have it until the dig finishes. Watch it:
+
+```bash
+curl -N http://localhost:8000/api/teardown/stream
+```
+
+## The sourcing invariant
+
+[`app/models.py`](app/models.py) makes an unsourced claim unconstructable rather
+than discouraged. `Claim.source_ids` requires at least one entry,
+`validate_source_refs` rejects citations to records that weren't ingested, and
+`Answer` forces sourcing to be exclusive — cite, or decline, no third shape.
+[`app/fixtures.py`](app/fixtures.py) is validated at import, so a broken trace
+kills the process at startup instead of reaching a demo.
+
+This is deliberately *not* an answer to Module 06 A1 (that's the team's call on
+how the engine works). It's the boundary the engine will have to come through.
 
 ## Configuration
 
@@ -73,12 +106,20 @@ cp .env.example .env
 backend/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py         FastAPI app, CORS middleware, routes
+│   ├── main.py         FastAPI app, CORS middleware, router mount
+│   ├── api.py          All routes. Read-only by construction
+│   ├── models.py       Domain types + the sourcing invariant
+│   ├── fixtures.py     The BMW demo project — swap this for real ingest
 │   └── config.py       Settings loaded from env / .env
 ├── requirements.txt    Python dependencies
 ├── .env.example        Template for local .env
 └── .venv/              Virtualenv (gitignored)
 ```
+
+`fixtures.py` is the seam. It holds the records, the teardown that cites them,
+the interrogation answers, and the baseline transcript. Nothing downstream knows
+where the records came from — replacing this one module with a real ingest and a
+real engine is the whole swap.
 
 ## Adding an endpoint
 

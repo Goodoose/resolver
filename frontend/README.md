@@ -70,17 +70,40 @@ server: {
 
 ```
 frontend/
-├── index.html          Entry HTML, loads src/main.tsx
-├── public/             Static files served as-is at the site root
+├── index.html                  Entry HTML, loads src/main.tsx
 ├── src/
-│   ├── main.tsx        React root, mounts <App /> into #root
-│   ├── App.tsx         Root component — start here
-│   ├── App.css         Component styles
-│   ├── index.css       Global styles
-│   └── assets/         Images imported from code (bundled and hashed)
-├── vite.config.ts      Vite config: React plugin + /api dev proxy
-└── tsconfig*.json      TypeScript configs (app / node / root references)
+│   ├── main.tsx                React root
+│   ├── App.tsx                 Shell: rail, top bar, run state, screen switch
+│   ├── api.ts                  Typed client + the SSE reader for the dig
+│   ├── index.css               Design tokens (palette) + reset
+│   ├── App.css                 All component styles
+│   ├── components/
+│   │   ├── Cited.tsx           Citation chips + inline evidence
+│   │   └── icons.tsx           Rail icons + source-kind marks
+│   └── screens/
+│       ├── LoadRun.tsx         Screen 1 · operator
+│       ├── Investigation.tsx   Screens 2+3 · the dig, findings, interrogation
+│       ├── HeadToHead.tsx      Screen 4 · benchmark
+│       └── Previews.tsx        Screens 5+6 · labelled mocks
+├── vite.config.ts              React plugin + /api dev proxy
+└── tsconfig*.json              TypeScript configs
 ```
+
+No router library: the shell switches screens from local state. Five screens
+with no deep-linking requirement didn't justify the dependency.
+
+### Two things worth knowing before editing
+
+**Evidence expands inline.** A citation opens *directly under the claim it
+belongs to* — never a modal, never a navigation. Getting from a claim to the
+record and back without losing your place is the single most important
+interaction in the product; anything that covers the page costs exactly that.
+
+**The dig is streamed, not simulated.** `runTeardown` in
+[`src/api.ts`](src/api.ts) reads server-sent events. The UI cannot render the
+verdict early because it does not have it yet — the steps and the result arrive
+as separate events. Don't replace this with a client-side timer over a
+fully-loaded result; that would make the visible reasoning theatre.
 
 ## Production build
 
